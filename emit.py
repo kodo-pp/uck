@@ -2,25 +2,27 @@
 
 emitter_begin_string = """#include <stdio.h>
 
-#define BF_MEMSIZE 30000
+#define BF_MEMSIZE {memory_size}
 
-unsigned char bf_memory[BF_MEMSIZE];
+{maybe_extern_mem}unsigned char bf_memory[BF_MEMSIZE];
 size_t bf_pointer = 0;
 
-int %s()
-{
-    for (size_t i = 0; i < BF_MEMSIZE; ++i) {
+int {default_function}()
+{{
+    for (size_t i = 0; i < BF_MEMSIZE; ++i) {{
         bf_memory[i] = (unsigned char) 0;
-    }
+    }}
 """
 emitter_end_string = """    return 0;
 }
 """
 
 class Emitter:
-    def __init__(self, default_function='main'):
+    def __init__(self, default_function, memory_size, do_emit_bf_mem):
         self._nested_loops_count = 0
         self.default_function = default_function
+        self.memory_size = memory_size
+        self.do_emit_bf_mem = do_emit_bf_mem
         self._line = 1
         self._char = 0
 
@@ -32,7 +34,9 @@ class Emitter:
         self._char = 0
 
     def emit_begin(self):
-        return emitter_begin_string % self.default_function
+        return emitter_begin_string.format(default_function=self.default_function,
+                                           memory_size=self.memory_size,
+                                           maybe_extern_mem = '' if self.do_emit_bf_mem else 'extern ')
 
     def emit_end(self):
         if self._nested_loops_count != 0:

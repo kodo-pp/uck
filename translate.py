@@ -2,10 +2,12 @@
 import stream
 import emit
 
-def uck_to_c(uck_buf: str):
+def uck_to_c(uck_buf: str, default_function: str, memory_size: int, do_emit_bf_mem: bool):
     uck_stream = stream.CharStream(uck_buf)
     c_stream = stream.CharStream()
-    emitter = emit.Emitter()
+    emitter = emit.Emitter(default_function=default_function,
+                           memory_size=memory_size,
+                           do_emit_bf_mem=do_emit_bf_mem)
 
     c_stream.add(emitter.emit_begin())
     while True:
