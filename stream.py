@@ -23,6 +23,11 @@ class CharStream:
     def reset(self):
         self.seek(0)
 
+    def unget(self):
+        if self._pos <= 0:
+            raise RangeError('unable to unget char: already at the beginning')
+        self._pos -= 1
+
     def seek(self, pos: int = 0):
         # TODO: negative positions
         if pos >= len(self.data) or pos < 0:
@@ -37,3 +42,16 @@ class CharStream:
             return self.data[self._pos:]
         except IndexError:
             return ''
+
+    def wait(self, char):
+        chars = 0
+        lines = 0
+        current = ''
+        while current != None and current != char:
+            current = self.next()
+            if current == '\n':
+                lines += 1
+                chars = 0
+            else:
+                chars += 1
+        return current, chars, lines

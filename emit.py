@@ -26,11 +26,23 @@ class Emitter:
         self._line = 1
         self._char = 0
 
-    def debug_newchar(self):
-        self._char += 1
+    def syntax_error(self, message: str):
+        raise SyntaxError('[{{input_file}}:{line}:{char}] {message}'
+                          .format(line=self._line, char=self._char, message=message))
 
-    def debug_newline(self):
-        self._line += 1
+    def emit_function_beginning(func_name: str, arg_type: int, ret_type: int):
+        s =  '    ' * self._nested_loops_count
+        self._nested_loops_count += 1
+        c_ret_type = 'struct {{uint8_t data[{}]}}'.format(ret_type)
+        c_arg_type = 'struct {{uint8_t data[{}]}}'.format(arg_type)
+        s = '{}{} {}({} input) {{for (size_t i = 0; i < sizeof(input.data); ++i) {{}}'.format(s, c_ret_type, func_name, c_arg_type)
+
+
+    def debug_newchar(self, count=1):
+        self._char += count
+
+    def debug_newline(self, count=1):
+        self._line += count
         self._char = 0
 
     def emit_begin(self):
