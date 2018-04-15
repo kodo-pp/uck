@@ -7,7 +7,7 @@ emitter_begin_string = """#include <stdio.h>
 unsigned char bf_memory[BF_MEMSIZE];
 size_t bf_pointer = 0;
 
-int main()
+int %s()
 {
     for (size_t i = 0; i < BF_MEMSIZE; ++i) {
         bf_memory[i] = (unsigned char) 0;
@@ -18,15 +18,26 @@ emitter_end_string = """    return 0;
 """
 
 class Emitter:
-    def __init__(self):
+    def __init__(self, default_function='main'):
         self._nested_loops_count = 0
+        self.default_function = default_function
+        self._line = 1
+        self._char = 0
+
+    def debug_newchar(self):
+        self._char += 1
+
+    def debug_newline(self):
+        self._line += 1
+        self._char = 0
 
     def emit_begin(self):
-        return emitter_begin_string
+        return emitter_begin_string % self.default_function
 
     def emit_end(self):
         if self._nested_loops_count != 0:
-            raise SyntaxError('missing closing "]" in input file')
+            raise SyntaxError('[{{input_file}}:{line}:{char}] missing closing "]"\'s in input file'
+                              .format(line=self._line, char=self._char))
         return emitter_end_string
 
     def emit_inc(self):
@@ -48,7 +59,8 @@ class Emitter:
     def emit_loop_end(self):
         self._nested_loops_count -= 1
         if self._nested_loops_count < 0:
-            raise SyntaxError('too many closing "]"\'s in input file')
+            raise SyntaxError('[{{input_file}}:{line}:{char}] too many closing "]"\'s in input file'
+                              .format(line=self._line, char=self._char))
         return '    ' * self._nested_loops_count + '    }\n'
 
     def emit_char_in(self):

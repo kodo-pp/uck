@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*
+
+from sys import stderr
 
 import args
 import files
@@ -7,7 +9,10 @@ import translate
 
 if __name__ == '__main__':
     args = args.parse()
-    print(repr(args))
     input_buf = files.try_read(args.source_file)
-    c_source_buf = translate.uck_to_c(input_buf)
+    c_source_buf = ''
+    try:
+        c_source_buf = translate.uck_to_c(input_buf)
+    except SyntaxError as se:
+        print('Uck syntax error: ' + str(se).format(input_file=args.source_file), file=stderr)
     files.try_write(args.output_file, c_source_buf)
